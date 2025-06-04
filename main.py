@@ -2,7 +2,7 @@ import telebot
 import pycountry
 from countryinfo import CountryInfo
 
-TOKEN = "8088210734:AAFYLqqjYNhSDUdTWHQ2v11rmBsUVZ-sTws"  # Replace with your bot token
+TOKEN = "8005232732:AAEEgNRWHSJMo0A1pJCG6wAt9NbBAay88JA"  # Replace with your bot token
 bot = telebot.TeleBot(TOKEN)
 
 @bot.message_handler(commands=['start'])
