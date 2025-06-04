@@ -1,45 +1,43 @@
-import telebot
-import pycountry
-from countryinfo import CountryInfo
+import logging
+import requests
+from telegram import Update
+from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 
-TOKEN = "8005232732:AAEEgNRWHSJMo0A1pJCG6wAt9NbBAay88JA"  # Replace with your bot token
-bot = telebot.TeleBot(TOKEN)
+# Enable logging (optional but recommended)
+logging.basicConfig(
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    level=logging.INFO
+)
 
-@bot.message_handler(commands=['start'])
-def start(message):
-    bot.reply_to(message, "🌍 Send me any country name and I’ll tell you about it!")
+logger = logging.getLogger(__name__)
 
-@bot.message_handler(func=lambda message: True)
-def country_info(message):
-    country_name = message.text.strip()
+# Function to fetch Quote of the Day from a free API
+def get_quote_of_the_day():
     try:
-        country = pycountry.countries.get(name=country_name) or \
-                  pycountry.countries.search_fuzzy(country_name)[0]
-
-        info = CountryInfo(country.name)
-        capital = info.capital()
-        population = info.info().get("population", "Unknown")
-        currencies = ", ".join(info.currencies())
-        languages = ", ".join(info.languages())
-        region = info.region()
-        subregion = info.subregion()
-
-        # Country flag emoji via Unicode Regional Indicator Symbols
-        flag = ''.join([chr(127397 + ord(c)) for c in country.alpha_2.upper()])
-
-        reply = (
-            f"{flag} *{country.name}*\n"
-            f"🌆 Capital: {capital}\n"
-            f"🌍 Region: {region} ({subregion})\n"
-            f"🗣️ Languages: {languages}\n"
-            f"💰 Currencies: {currencies}\n"
-            f"👥 Population: {population}"
-        )
-
-        bot.reply_to(message, reply, parse_mode='Markdown')
+        response = requests.get("https://quotes.rest/qod?language=en")
+        data = response.json()
+        quote = data['contents']['quotes'][0]['quote']
+        author = data['contents']['quotes'][0]['author']
+        return f'"{quote}"\n— {author}'
     except Exception as e:
-        bot.reply_to(message, "❌ I couldn't find that country. Please try a valid name.")
+        logger.error(f"Error fetching quote: {e}")
+        return "Sorry, I couldn't retrieve the quote at the moment."
+
+# Command handler for /quote
+async def quote(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    quote_text = get_quote_of_the_day()
+    await update.message.reply_text(quote_text)
+
+# Main function to run the bot
+async def main():
+    # Replace 'YOUR_BOT_TOKEN' with your actual bot token
+    app = ApplicationBuilder().token("8088210734:AAFYLqqjYNhSDUdTWHQ2v11rmBsUVZ-sTws").build()
+
+    app.add_handler(CommandHandler("quote", quote))
+
+    print("Bot is running...")
+    await app.run_polling()
 
 if __name__ == "__main__":
-    print("🌐 Country info bot is running...")
-    bot.infinity_polling()
+    import asyncio
+    asyncio.run(main())
