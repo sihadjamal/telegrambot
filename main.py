@@ -31,7 +31,7 @@ async def quote(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # Main function to run the bot
 async def main():
     # Replace 'YOUR_BOT_TOKEN' with your actual bot token
-    app = ApplicationBuilder().token("8088210734:AAFYLqqjYNhSDUdTWHQ2v11rmBsUVZ-sTws").build()
+    app = ApplicationBuilder().token("7888772610:AAFL3Le8_6CQxqCHs4bfWlDU9KJ2m8GNb6U").build()
 
     app.add_handler(CommandHandler("quote", quote))
 
